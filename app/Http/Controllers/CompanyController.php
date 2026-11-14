@@ -54,7 +54,7 @@ class CompanyController extends Controller
             'files' => $files,
             'slots' => FileWorkspace::SLOTS,
             'mappings' => $mappings,
-            'fields' => ColumnMapper::FIELDS,
+            'options' => ColumnMapper::options(),
         ]);
     }
 
@@ -79,7 +79,7 @@ class CompanyController extends Controller
         $merged = $company->column_mapping ?? [];
         foreach (array_keys(FileWorkspace::SLOTS) as $slot) {
             foreach ((array) ($input[$slot] ?? []) as $header => $field) {
-                $merged[(string) $header] = array_key_exists($field, ColumnMapper::FIELDS) ? $field : '';
+                $merged[(string) $header] = ColumnMapper::isValid((string) $field) ? $field : '';
             }
         }
 

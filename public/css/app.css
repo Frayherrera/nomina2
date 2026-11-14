@@ -270,3 +270,8 @@ td.finding { min-width: 280px; }
     .table-wrap { margin: 0 -20px -20px; }
 }
 .aux-form { display: none; }
+.mapping-sheet { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #d6dae6; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; color: var(--primary); text-transform: uppercase; }
+.tolerance { gap: 4px; font-size: 12px; margin-top: 2px; }
+.tolerance input { padding: 7px 10px !important; }
+.tolerance small { color: var(--muted); font-weight: 400; font-size: 11.5px; }
+.text-value { min-width: 140px; font-size: 12.5px; }

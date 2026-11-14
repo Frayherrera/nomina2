@@ -73,17 +73,25 @@
                     <label class="dropzone">
                         <x-icon name="upload" :size="20"/>
                         <b>{{ $file ? 'Reemplazar archivo' : 'Seleccionar archivo' }}</b>
-                        <small>Excel, CSV u ODS · cualquier extensión se puede adjuntar</small>
+                        <small>Excel, CSV, ODS o PDF de planilla PILA</small>
                         <input type="file" name="files[{{ $slot }}]" onchange="uploadFile(this)">
                     </label>
                     @if ($file)
                         <div class="file-status">
                             <x-icon name="{{ $file['supported'] ? 'check' : 'alert' }}" :size="15"/>
                             <span>{{ $file['name'] }}
-                                <small>{{ $file['supported'] ? $file['rows'].' filas · '.count($file['headers']).' columnas · listo para comparar' : 'Adjunto · extracción automática pendiente' }}</small>
+                                <small>{{ $file['supported']
+                                    ? $file['rows'].' filas · '.count($file['headers']).' columnas'.(count($file['sheets'] ?? []) > 1 ? ' · '.count($file['sheets']).' hojas' : '').' · listo para comparar'
+                                    : 'Adjunto · extracción automática pendiente' }}</small>
                             </span>
                             <button class="icon-btn small" type="submit" form="remove-{{ $slot }}" title="Retirar archivo" aria-label="Retirar archivo"><x-icon name="trash" :size="14"/></button>
                         </div>
+                        @if ($slot !== 'main' && $file['supported'])
+                            <label class="tolerance">Tolerancia de redondeo ($)
+                                <input type="number" name="tolerance[{{ $slot }}]" value="{{ rtrim(rtrim(number_format($file['tolerance'] ?? 1, 2, '.', ''), '0'), '.') }}" min="0" step="any">
+                                <small>Diferencias menores a este valor no se reportan{{ ($file['extension'] ?? '') === 'pdf' ? ' (la PILA redondea aportes a la centena)' : '' }}.</small>
+                            </label>
+                        @endif
                     @endif
                 </div>
             @endforeach
@@ -105,13 +113,24 @@
                                 <div class="muted-box">Archivo adjunto sin columnas detectadas. Conviértelo a Excel o CSV para auditarlo.</div>
                             @endif
                             @foreach ($file['headers'] as $i => $header)
+                                @php
+                                    $current = $mappings[$slot][$header] ?? '';
+                                    $sheet = str_contains($header, ' · ') ? \Illuminate\Support\Str::beforeLast($header, ' · ') : null;
+                                @endphp
+                                @if ($sheet && ($loop->first || ! str_starts_with($file['headers'][$i - 1], $sheet.' · ')))
+                                    <div class="mapping-sheet">Hoja: {{ $sheet }}</div>
+                                @endif
                                 <div class="mapping-row">
-                                    <span title="{{ $header }}">{{ $header }}</span>
-                                    <select name="fields[{{ $slot }}][{{ $i }}]" class="{{ ($mappings[$slot][$header] ?? '') ? 'mapped' : '' }}"
+                                    <span title="{{ $header }}">{{ \App\Services\Audit\ColumnMapper::baseHeader($header) }}</span>
+                                    <select name="fields[{{ $slot }}][{{ $i }}]" class="{{ $current ? 'mapped' : '' }}"
                                             onchange="this.classList.toggle('mapped', !!this.value)" aria-label="Campo para {{ $header }}">
                                         <option value="">No utilizar</option>
-                                        @foreach ($fields as $value => $field)
-                                            <option value="{{ $value }}" @selected(($mappings[$slot][$header] ?? '') === $value)>{{ $field['label'] }}</option>
+                                        @foreach ($options as $group => $groupOptions)
+                                            <optgroup label="{{ $group }}">
+                                                @foreach ($groupOptions as $value => $label)
+                                                    <option value="{{ $value }}" @selected($current === $value)>{{ $label }}</option>
+                                                @endforeach
+                                            </optgroup>
                                         @endforeach
                                     </select>
                                 </div>

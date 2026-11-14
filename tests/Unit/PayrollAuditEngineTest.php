@@ -27,10 +27,11 @@ class PayrollAuditEngineTest extends TestCase
         $findings = (new PayrollAuditEngine)->run($main, 'principal.xlsx', [['name' => 'banco.csv', 'rows' => $compare]]);
         $types = array_column($findings, 'type');
 
-        $this->assertSame(['duplicate', 'difference', 'quantity', 'missing_main'], $types);
+        $this->assertSame(['duplicate', 'missing_main', 'difference', 'quantity'], $types);
         $this->assertSame('HALL-0001', $findings[0]['code']);
-        $this->assertEquals(-50000, $findings[1]['difference']);
-        $this->assertStringContainsString('$ 50.000', $findings[1]['description']);
+        $this->assertSame('Empleado completo', $findings[1]['concept']);
+        $this->assertEquals(-50000, $findings[2]['difference']);
+        $this->assertStringContainsString('$ 50.000', $findings[2]['description']);
 
         $summary = PayrollAuditEngine::summarize($findings);
         $this->assertSame(['total' => 4, 'differences' => 1, 'missing' => 1, 'duplicates' => 1], $summary);
@@ -56,7 +57,10 @@ class PayrollAuditEngineTest extends TestCase
 
         $this->assertSame('employeeId', ColumnMapper::guess('Cédula'));
         $this->assertSame('employee', ColumnMapper::guess(' NOMBRE '));
-        $this->assertSame('value', ColumnMapper::guess('Valor liquidado'));
+        $this->assertSame('value', ColumnMapper::guess('Valor liquidado', rowFormat: true));
+        $this->assertSame('c:neto', ColumnMapper::guess('Neto a pagar'));
+        $this->assertSame('1064836525', ColumnMapper::normalizeId('CC 1.064.836.525'));
+        $this->assertSame('1064836525', ColumnMapper::normalizeId(1064836525.0));
         $this->assertSame('', ColumnMapper::guess('Centro de costo'));
     }
 }

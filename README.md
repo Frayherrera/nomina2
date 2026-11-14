@@ -8,14 +8,20 @@ Plataforma para auditar la nómina de varias empresas: cada empresa tiene sus pe
 - **Panel principal** con indicadores: empresas, auditorías ejecutadas y hallazgos totales.
 - **Empresas**: registro con nombre y NIT (opcional).
 - **Periodos de nómina** por empresa (mes/año, p. ej. "Enero de 2026").
-- **Carga de 3 archivos**: archivo principal (la referencia) y dos archivos de comparación.
-  Lee Excel (`xlsx`, `xlsm`, `xls`), `csv`/`txt` (detecta `,` o `;`) y `ods`. Se puede adjuntar cualquier otro formato, pero queda pendiente para revisión manual.
-- **Homologación inteligente**: reconoce encabezados comunes (Cédula, Documento, Nombre, Trabajador, Concepto, Descripción, Valor, Importe, Total, Días, Horas…) y permite corregir a mano los que no reconoce. La homologación se guarda por empresa y se reutiliza en los siguientes periodos.
+- **Carga de 3 archivos**: archivo principal (la referencia) y dos archivos de comparación. Uso típico:
+  1. Comprobante / liquidación de nómina en Excel (`.xlsm`/`.xlsx`) → principal.
+  2. Reporte de SIIGO (Nómina detallada por concepto) → comparación 1.
+  3. Planilla PILA en PDF (SuAporte / Enlace Operativo) → comparación 2.
+
+  Lee Excel (`xlsx`, `xlsm`, `xls`), `csv`/`txt` (detecta `,` o `;`), `ods` y PDF de planilla PILA (incluso protegidos, con `pdftotext`). Otros formatos se adjuntan para revisión manual.
+- **Lectura inteligente de hojas de cálculo**: ubica la fila de encabezados aunque arriba haya títulos (empresa, NIT, periodo), completa encabezados de dos filas, descarta filas de totales y firmas, y une todas las hojas con detalle por empleado (p. ej. Nómina + Provisión de prestaciones; o en SIIGO: Neto a pagar + Seguridad social + Prestaciones).
+- **Homologación inteligente**: cada columna se asigna a un concepto estándar (Sueldo devengado, Auxilio de transporte, Salud y Pensión del empleado, Préstamos y anticipos, Total devengado, Total deducciones, Neto a pagar, IBC, aportes a seguridad social, Prima, Cesantías, Intereses, Vacaciones…). Reconoce automáticamente los encabezados del comprobante, SIIGO y la PILA, y permite corregir a mano. Columnas asignadas al mismo concepto de "suma" se suman (Préstamo + Anticipo = Préstamos). También admite archivos en formato por filas (Concepto / Valor / Cantidad). La homologación se guarda por empresa.
 - **Motor de auditoría** (llave: identificación del empleado + concepto):
   - Registros duplicados en el archivo principal.
-  - Registros del archivo comparativo que no están en el principal.
-  - Registros del principal que faltan en cada archivo comparativo.
-  - Diferencias de valor (más de $0,01) y diferencias de cantidad (solo si ambos archivos tienen la columna de cantidad).
+  - Empleados que están en un archivo y no en el otro (un hallazgo por empleado).
+  - Nombres del empleado que no coinciden entre archivos.
+  - Diferencias de valor por encima de la **tolerancia de redondeo** de cada archivo comparativo ($1 por defecto; $100 para la PILA, que redondea aportes a la centena).
+  - Solo compara conceptos que existen en ambos archivos; la PILA se compara por equivalencia (IBC salud ↔ Sueldo devengado, Aporte salud ↔ Salud del empleado).
   - Entiende montos en formato colombiano e internacional (`$ 1.250.000`, `1.250.000,50`, `1,250,000.50`).
 - **Resultados** con buscador (empleado, identificación o concepto) y filtros (Todos / Con diferencia / Revisión manual).
 - **Informe PDF** horizontal con resumen y detalle de cada hallazgo.

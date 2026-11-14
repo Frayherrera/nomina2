@@ -29,6 +29,14 @@ class AuditFinding extends Model
             return '—';
         }
 
-        return is_numeric($value) ? number_format((float) $value, 0, ',', '.') : $value;
+        return is_numeric($value) ? self::amount((float) $value) : $value;
+    }
+
+    /** 1250000 → "1.250.000"; 72954.38 → "72.954,38". */
+    public static function amount(float $value): string
+    {
+        $decimals = abs($value - round($value)) >= 0.005 ? 2 : 0;
+
+        return number_format($value, $decimals, ',', '.');
     }
 }

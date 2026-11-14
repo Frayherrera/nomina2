@@ -56,6 +56,9 @@ class FileWorkspace
             'supported' => false,
             'headers' => [],
             'rows' => 0,
+            'sheets' => [],
+            // La PILA redondea los aportes a la centena (Decreto 1990 de 2016).
+            'tolerance' => $extension === 'pdf' ? 100 : 1,
         ];
 
         if (! SpreadsheetReader::supports($extension)) {
@@ -66,9 +69,12 @@ class FileWorkspace
                 $entry['supported'] = true;
                 $entry['headers'] = $data['headers'];
                 $entry['rows'] = count($data['rows']);
-                $message = "{$entry['name']}: {$entry['rows']} registros leídos.";
+                $entry['sheets'] = $data['sheets'] ?? [];
+                $sheets = count($entry['sheets']) > 1 ? ' en '.count($entry['sheets']).' hojas ('.implode(', ', $entry['sheets']).')' : '';
+                $message = "{$entry['name']}: {$entry['rows']} empleados/registros leídos$sheets.";
             } catch (Throwable $e) {
-                $message = "{$entry['name']} se adjuntó, pero no se pudo leer automáticamente. Queda para revisión o conversión.";
+                report($e);
+                $message = "{$entry['name']} se adjuntó, pero no se pudo leer automáticamente ({$e->getMessage()}). Queda para revisión o conversión.";
             }
         }
 
@@ -94,11 +100,23 @@ class FileWorkspace
             }
             foreach ($file['headers'] as $i => $header) {
                 $field = (string) ($fields[$i] ?? '');
-                $result[$slot][$header] = array_key_exists($field, ColumnMapper::FIELDS) ? $field : '';
+                $result[$slot][$header] = ColumnMapper::isValid($field) ? $field : '';
             }
         }
 
         return $result;
+    }
+
+    /** Guarda la tolerancia de redondeo enviada para cada archivo comparativo. */
+    public function rememberTolerances(Company $company, Request $request): void
+    {
+        $stored = session($this->key($company), []);
+        foreach ((array) $request->input('tolerance', []) as $slot => $value) {
+            if (isset($stored[$slot]) && is_numeric($value)) {
+                $stored[$slot]['tolerance'] = max(0, min(1000000, (float) $value));
+            }
+        }
+        session([$this->key($company) => $stored]);
     }
 
     /** @return list<array<string,mixed>> */

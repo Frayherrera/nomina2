@@ -42,8 +42,10 @@ class AuditController extends Controller
 
         foreach (array_keys(FileWorkspace::SLOTS) as $slot) {
             $assigned = array_filter($mapFor($slot));
-            if (! in_array('employeeId', $assigned, true) || ! in_array('concept', $assigned, true)) {
-                return back()->with('error', 'Cada archivo debe tener homologadas al menos las columnas "Identificación del empleado" y "Concepto" ('.FileWorkspace::SLOTS[$slot]['short'].').');
+            $hasConcepts = in_array('concept', $assigned, true)
+                || collect($assigned)->contains(fn ($f) => str_starts_with($f, 'c:'));
+            if (! in_array('employeeId', $assigned, true) || ! $hasConcepts) {
+                return back()->with('error', 'Cada archivo debe tener homologada la "Identificación del empleado" y al menos un concepto ('.FileWorkspace::SLOTS[$slot]['short'].').');
             }
         }
 
@@ -52,6 +54,7 @@ class AuditController extends Controller
             $comparisons = collect(['compare1', 'compare2'])->map(fn ($slot) => [
                 'name' => $files[$slot]['name'],
                 'rows' => ColumnMapper::apply($workspace->rows($files[$slot]), $mapFor($slot)),
+                'tolerance' => (float) ($files[$slot]['tolerance'] ?? 1),
             ])->all();
 
             $findings = $engine->run($mainRows, $files['main']['name'], $comparisons);
@@ -63,7 +66,7 @@ class AuditController extends Controller
                     'period_id' => $period->id,
                     'company_name' => $company->name,
                     'period_label' => $period->label,
-                    'files' => collect($files)->map(fn ($f) => ['name' => $f['name'], 'rows' => $f['rows']])->all(),
+                    'files' => collect($files)->map(fn ($f) => ['name' => $f['name'], 'rows' => $f['rows'], 'tolerance' => $f['tolerance'] ?? 1])->all(),
                     ...$summary,
                 ]);
                 $audit->user()->associate($request->user());

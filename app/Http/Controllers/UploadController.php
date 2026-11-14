@@ -53,6 +53,7 @@ class UploadController extends Controller
             session(["period.{$company->id}" => (int) $request->input('period_id')]);
         }
 
+        $workspace->rememberTolerances($company, $request);
         $mapping = $workspace->mappingFromRequest($company, $request);
         foreach ($mapping as $slot => $slotMapping) {
             session(["mapping_draft.{$company->id}.$slot" => $slotMapping]);

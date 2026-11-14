@@ -66,7 +66,7 @@
             <tr>
                 <td><span class="label">Valor principal:</span> {{ AuditFinding::display($f->main_value) }}</td>
                 <td><span class="label">Valor comparado:</span> {{ AuditFinding::display($f->compared_value) }}</td>
-                <td><span class="label">Diferencia:</span> <span class="{{ $f->difference ? 'neg' : '' }}">{{ number_format($f->difference, 0, ',', '.') }}</span></td>
+                <td><span class="label">Diferencia:</span> <span class="{{ $f->difference ? 'neg' : '' }}">{{ AuditFinding::amount($f->difference) }}</span></td>
             </tr>
             <tr><td colspan="3"><span class="label">Hallazgo:</span> {{ $f->description }}</td></tr>
             <tr><td colspan="3"><span class="label">Acción sugerida:</span> {{ $f->suggestion }}</td></tr>

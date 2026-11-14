@@ -72,9 +72,9 @@
                         </td>
                         <td>{{ $f->employee }}<small>{{ $f->employee_id }}</small></td>
                         <td>{{ $f->concept }}</td>
-                        <td class="num">{{ AuditFinding::display($f->main_value) }}</td>
-                        <td class="num">{{ AuditFinding::display($f->compared_value) }}</td>
-                        <td class="num {{ $f->difference ? 'negative' : '' }}">{{ number_format($f->difference, 0, ',', '.') }}</td>
+                        <td class="{{ is_numeric($f->main_value) ? 'num' : 'text-value' }}">{{ AuditFinding::display($f->main_value) }}</td>
+                        <td class="{{ is_numeric($f->compared_value) ? 'num' : 'text-value' }}">{{ AuditFinding::display($f->compared_value) }}</td>
+                        <td class="num {{ $f->difference ? 'negative' : '' }}">{{ AuditFinding::amount($f->difference) }}</td>
                         <td><span class="badge amber"><x-icon name="clock" :size="12"/> {{ $f->status }}</span></td>
                     </tr>
                 @endforeach
