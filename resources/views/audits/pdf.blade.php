@@ -8,7 +8,7 @@
         @page { margin: 120px 40px 50px 40px; }
         body { font-family: DejaVu Sans, sans-serif; font-size: 9px; color: #3a5560; }
         header { position: fixed; top: -120px; left: -40px; right: -40px; height: 95px; background: #e0f2f6; padding: 0 40px; }
-        header .logo { position: absolute; top: 28px; left: 40px; width: 34px; height: 34px; border-radius: 8px; background: #4291b8; color: #fff; font-weight: bold; font-size: 16px; text-align: center; line-height: 34px; }
+        header .logo { position: absolute; top: 28px; left: 40px; width: 34px; height: 25px; padding-top: 9px; border-radius: 8px; background: #4291b8; color: #fff; font-weight: bold; font-size: 16px; text-align: center; line-height: 16px; }
         header .title { position: absolute; top: 26px; left: 86px; }
         header .title b { font-size: 20px; color: #264e60; display: block; }
         header .title span { font-size: 8px; color: #487c87; letter-spacing: .5px; }

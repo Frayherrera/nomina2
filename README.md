@@ -1,59 +1,68 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# AUDIT PRO — Auditoría de nómina (Laravel 12)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Plataforma para auditar la nómina de varias empresas: cada empresa tiene sus periodos, sus homologaciones de columnas y su historial de auditorías.
 
-## About Laravel
+## Funcionalidades
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Inicio de sesión** con datos aislados por usuario (cada auditor solo ve sus empresas).
+- **Panel principal** con indicadores: empresas, auditorías ejecutadas y hallazgos totales.
+- **Empresas**: registro con nombre y NIT (opcional).
+- **Periodos de nómina** por empresa (mes/año, p. ej. "Enero de 2026").
+- **Carga de 3 archivos**: archivo principal (la referencia) y dos archivos de comparación.
+  Lee Excel (`xlsx`, `xlsm`, `xls`), `csv`/`txt` (detecta `,` o `;`) y `ods`. Se puede adjuntar cualquier otro formato, pero queda pendiente para revisión manual.
+- **Homologación inteligente**: reconoce encabezados comunes (Cédula, Documento, Nombre, Trabajador, Concepto, Descripción, Valor, Importe, Total, Días, Horas…) y permite corregir a mano los que no reconoce. La homologación se guarda por empresa y se reutiliza en los siguientes periodos.
+- **Motor de auditoría** (llave: identificación del empleado + concepto):
+  - Registros duplicados en el archivo principal.
+  - Registros del archivo comparativo que no están en el principal.
+  - Registros del principal que faltan en cada archivo comparativo.
+  - Diferencias de valor (más de $0,01) y diferencias de cantidad (solo si ambos archivos tienen la columna de cantidad).
+  - Entiende montos en formato colombiano e internacional (`$ 1.250.000`, `1.250.000,50`, `1,250,000.50`).
+- **Resultados** con buscador (empleado, identificación o concepto) y filtros (Todos / Con diferencia / Revisión manual).
+- **Informe PDF** horizontal con resumen y detalle de cada hallazgo.
+- **Historial** de auditorías, para consultarlas sin volver a cargar los archivos.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Ejecutar con Docker
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Requisito: Docker Desktop.
 
-## Learning Laravel
+```bash
+docker compose up -d --build
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Abre http://localhost:8000.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+El contenedor instala dependencias si faltan, crea `.env` y la clave de la app, ejecuta migraciones y crea el usuario auditor inicial:
 
-## Laravel Sponsors
+| Campo | Valor por defecto (cámbialo en `.env`) |
+|---|---|
+| Nombre | `AUDITOR_NAME="Jesús Emiro Pérez"` |
+| Correo | `AUDITOR_EMAIL=auditor@auditpro.test` |
+| Contraseña | `AUDITOR_PASSWORD=AuditPro2026!` |
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Después de cambiar esos valores, ejecuta `docker compose exec app php artisan db:seed` para actualizar el usuario.
 
-### Premium Partners
+### Comandos útiles
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+docker compose exec app php artisan test          # pruebas automatizadas
+docker compose exec app php artisan migrate:fresh --seed   # reinicia la base de datos
+docker compose logs -f app                        # ver logs
+docker compose down                               # detener
+```
 
-## Contributing
+## Base de datos
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Por defecto usa SQLite (`database/database.sqlite`). Para usar MySQL, cambia las variables `DB_*` en `.env` (la imagen ya incluye `pdo_mysql`).
 
-## Code of Conduct
+## Estructura principal
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Ruta | Contenido |
+|---|---|
+| `app/Services/Audit/PayrollAuditEngine.php` | Reglas de auditoría |
+| `app/Services/Audit/ColumnMapper.php` | Campos, alias de encabezados, normalización y lectura de montos |
+| `app/Services/Audit/SpreadsheetReader.php` | Lectura de Excel/CSV/ODS (PhpSpreadsheet) |
+| `app/Services/Audit/FileWorkspace.php` | Archivos cargados por empresa (sesión + `storage/app/private/uploads`) |
+| `app/Http/Controllers/` | Autenticación, panel, empresas, periodos, carga de archivos y auditorías |
+| `resources/views/` | Vistas Blade; `audits/pdf.blade.php` es el informe PDF |
+| `public/css/app.css` | Estilos (CSS plano, sin compilación) |
+| `tests/` | Pruebas del motor y del flujo completo |

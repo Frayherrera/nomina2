@@ -269,3 +269,4 @@ td.finding { min-width: 280px; }
     .search { min-width: 0; width: 100%; }
     .table-wrap { margin: 0 -20px -20px; }
 }
+.aux-form { display: none; }

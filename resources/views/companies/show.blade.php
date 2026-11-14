@@ -18,10 +18,10 @@
     </div>
 
     {{-- Formularios auxiliares (los controles viven dentro del formulario principal y los referencian con form="...") --}}
-    <form id="period-form" method="POST" action="{{ route('periods.store', $company) }}">@csrf</form>
+    <form id="period-form" class="aux-form" method="POST" action="{{ route('periods.store', $company) }}">@csrf</form>
     @foreach ($files as $slot => $file)
         @if ($file)
-            <form id="remove-{{ $slot }}" method="POST" action="{{ route('uploads.destroy', [$company, $slot]) }}">@csrf @method('DELETE')</form>
+            <form id="remove-{{ $slot }}" class="aux-form" method="POST" action="{{ route('uploads.destroy', [$company, $slot]) }}">@csrf @method('DELETE')</form>
         @endif
     @endforeach
 
