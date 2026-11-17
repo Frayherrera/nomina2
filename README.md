@@ -13,7 +13,7 @@ Plataforma para auditar la nómina de varias empresas: cada empresa tiene sus pe
   2. Reporte de SIIGO (Nómina detallada por concepto) → comparación 1.
   3. Planilla PILA en PDF (SuAporte / Enlace Operativo) → comparación 2.
 
-  Lee Excel (`xlsx`, `xlsm`, `xls`), `csv`/`txt` (detecta `,` o `;`), `ods` y PDF de planilla PILA (incluso protegidos, con `pdftotext`). Otros formatos se adjuntan para revisión manual.
+  Lee Excel (`xlsx`, `xlsm`, `xls`), `csv`/`txt` (detecta `,` o `;`), `ods` y PDF de planilla PILA (incluso protegidos con contraseña de propietario; se leen en PHP puro, sin programas externos en el servidor). Otros formatos se adjuntan para revisión manual.
 - **Lectura inteligente de hojas de cálculo**: ubica la fila de encabezados aunque arriba haya títulos (empresa, NIT, periodo), completa encabezados de dos filas, descarta filas de totales y firmas, y une todas las hojas con detalle por empleado (p. ej. Nómina + Provisión de prestaciones; o en SIIGO: Neto a pagar + Seguridad social + Prestaciones).
 - **Homologación inteligente**: cada columna se asigna a un concepto estándar (Sueldo devengado, Auxilio de transporte, Salud y Pensión del empleado, Préstamos y anticipos, Total devengado, Total deducciones, Neto a pagar, IBC, aportes a seguridad social, Prima, Cesantías, Intereses, Vacaciones…). Reconoce automáticamente los encabezados del comprobante, SIIGO y la PILA, y permite corregir a mano. Columnas asignadas al mismo concepto de "suma" se suman (Préstamo + Anticipo = Préstamos). También admite archivos en formato por filas (Concepto / Valor / Cantidad). La homologación se guarda por empresa.
 - **Motor de auditoría** (llave: identificación del empleado + concepto):
